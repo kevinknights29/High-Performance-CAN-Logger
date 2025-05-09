@@ -9,7 +9,8 @@ CC = g++
 CXXFLAGS = -Wall -Wextra -std=c++17 -O2
 
 # Project Structure
-TARGET = can_logger
+LOGGER = can_logger
+GENERATOR = can_generator
 SRC_DIR = src
 BUILD_DIR = build
 
@@ -17,24 +18,19 @@ BUILD_DIR = build
 # 	The `wildcard` function returns a space-separated list of all files matching the given pattern.
 # 	Here, `$(SRC_DIR)/*.cpp` means “all files ending in `.cpp` in the directory specified by `SRC_DIR`.”
 SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
-# 	The `patsubst` function stands for “pattern substitution.” It replaces text in a list of strings according to a pattern.
-# 	The pattern here says: take each file in `$(SOURCES)` that matches `$(SRC_DIR)/%.cpp` (e.g., `src/main.cpp`) 
-# 		and convert it to `$(BUILD_DIR)/%.o` (e.g., `build/main.o`).
-OBJECTS = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
 
 # Default target
 # 	This line sets up `all` as the default action when you run `make`, 
-#	and it triggers the build of your main program or executable as defined by `$(BUILD_DIR)/$(TARGET)`
-all: $(BUILD_DIR)/$(TARGET)
+#	and it triggers the build of your main program or executable as defined 
+# 	by `$(BUILD_DIR)/$(LOGGER) $(BUILD_DIR)/$(GENERATOR)`
+all: $(BUILD_DIR)/$(LOGGER) $(BUILD_DIR)/$(GENERATOR)
 
-# Link executable
-# 	This rule tells `make` how to link all the object files together to produce the final executable. 
-# 	If any object file changes, `make` will re-run this command to update the executable
-# 	`$(CC)` is the compiler (e.g., `g++`).
-# 	`$(CXXFLAGS)` are the compiler flags (e.g., `-Wall -Wextra -std=c++17 -O2`).
-# 	`$^` is an automatic variable that expands to all the dependencies (the object files).
-# 	`-o $@` tells the compiler to name the output file as the target (`$@` expands to `$(BUILD_DIR)/$(TARGET)`).
-$(BUILD_DIR)/$(TARGET): $(OBJECTS)
+# Logger Target
+$(BUILD_DIR)/$(LOGGER): $(BUILD_DIR)/$(LOGGER).o
+	$(CC) $(CXXFLAGS) $^ -o $@
+
+# Generator Target
+$(BUILD_DIR)/$(GENERATOR): $(BUILD_DIR)/$(GENERATOR).o
 	$(CC) $(CXXFLAGS) $^ -o $@
 
 # Compile source files
@@ -51,9 +47,13 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $@
 
-# Run the program
-run: all
-	./$(BUILD_DIR)/$(TARGET)
+# Run Logger
+run_logger: all
+	./$(BUILD_DIR)/$(LOGGER)
+
+# Run Generator
+run_generator: all
+	./$(BUILD_DIR)/$(GENERATOR)
 
 # Clean build artifacts
 clean:
